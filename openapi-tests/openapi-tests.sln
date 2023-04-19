@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.5.33502.453
+VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openapi-tests", "openapi-tests\openapi-tests.csproj", "{B8D81BEA-B355-4CE0-8AC6-EBE332401BF7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openapi-tests", "openapi-tests\openapi-tests.csproj", "{A12DA5CA-0504-49A8-A4FB-03EFCE86D752}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B8D81BEA-B355-4CE0-8AC6-EBE332401BF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8D81BEA-B355-4CE0-8AC6-EBE332401BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B8D81BEA-B355-4CE0-8AC6-EBE332401BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B8D81BEA-B355-4CE0-8AC6-EBE332401BF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A12DA5CA-0504-49A8-A4FB-03EFCE86D752}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A12DA5CA-0504-49A8-A4FB-03EFCE86D752}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A12DA5CA-0504-49A8-A4FB-03EFCE86D752}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A12DA5CA-0504-49A8-A4FB-03EFCE86D752}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2ADA348B-DF20-4B46-9F39-0B954EB75FCC}
+		SolutionGuid = {A7F83FBF-03C6-4F46-A9F2-8A9D1BF747A4}
 	EndGlobalSection
 EndGlobal
