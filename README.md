@@ -6,3 +6,4 @@ NuGet Packages Installed:
   - RestSharp
   - FluentAssertions
   - XUnit
+  - Newtonsoft.Json
