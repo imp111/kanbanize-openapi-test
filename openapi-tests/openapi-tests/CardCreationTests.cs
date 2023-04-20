@@ -1,10 +1,6 @@
-using RestSharp;
-using RestSharp.Authenticators;
-using RestSharp.Authenticators.OAuth2;
-
 namespace openapi_tests
 {
-    public class UnitTest1
+    public class CardCreationTests
     {
         [Fact]
         public void Test1()
@@ -16,7 +12,9 @@ namespace openapi_tests
             });
 
             // request
-            var request = new RestRequest("/workspaces/");
+            var request = new RestRequest("/workspaces/{workspace_id}")
+                .AddUrlSegment("workspace_id", 2);
+
             request.AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
 
            // response
