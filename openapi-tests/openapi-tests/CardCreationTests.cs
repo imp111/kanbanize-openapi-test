@@ -1,7 +1,15 @@
+using Xunit.Abstractions;
+
 namespace openapi_tests
 {
     public class CardCreationTests
     {
+        private readonly ITestOutputHelper _outputHelper;
+        public CardCreationTests(ITestOutputHelper testOutputHelper)
+        {
+            _outputHelper = testOutputHelper;
+        }
+
         [Fact]
         public void GetAllWorkspaces()
         {
@@ -21,6 +29,7 @@ namespace openapi_tests
 
             // Assert
             Assert.Equal("OK", statusCode);
+            _outputHelper.WriteLine("A succesful response, Status code: 200 (OK)");
         }
 
         [Theory]
@@ -46,7 +55,16 @@ namespace openapi_tests
             string statusCode = repsone.StatusCode.ToString();
 
             // Assert
-            Assert.Equal("OK", statusCode);
+            if (id >= 1 && id <= 2)
+            {
+                Assert.Equal("OK", statusCode);
+                _outputHelper.WriteLine("Status code - 200");
+            }
+            else
+            {
+                Assert.Equal("NotFound", statusCode);
+                _outputHelper.WriteLine("Status code - 400");
+            }
         }
     }
 }
