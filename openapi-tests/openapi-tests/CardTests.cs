@@ -1,9 +1,9 @@
 ﻿namespace openapi_tests
 {
-    public class CardCreationTests
+    public class CardTests
     {
         private readonly ITestOutputHelper _outputHelper;
-        public CardCreationTests(ITestOutputHelper testOutputHelper)
+        public CardTests(ITestOutputHelper testOutputHelper)
         {
             _outputHelper = testOutputHelper;
         }

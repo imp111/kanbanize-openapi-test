@@ -1,6 +1,6 @@
 ﻿namespace openapi_tests.Data
 {
-    public class Datum
+    public class DatumWorkspaces
     {
         public int workspace_id { get; set; }
         public int type { get; set; }
@@ -8,8 +8,8 @@
         public string? name { get; set; }
     }
 
-    public class Root
+    public class RootWorkspaces
     {
-        public List<Datum>? data { get; set; }
+        public List<DatumWorkspaces>? data { get; set; }
     }
 }

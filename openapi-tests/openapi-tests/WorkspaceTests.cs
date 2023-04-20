@@ -24,10 +24,9 @@ namespace openapi_tests
             var response = restClient.Get(request);
             
             // deserialize
-            Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(response.Content);
-            int length = myDeserializedClass.data.Count;
-
-            return length;
+            RootWorkspaces myDeserializedClass = JsonConvert.DeserializeObject<RootWorkspaces>(response.Content);
+            
+            return myDeserializedClass.data.Count;
         }
 
         [Fact]
