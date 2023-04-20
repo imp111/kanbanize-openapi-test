@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "7I2IZFZKMYGKOIieYe7VWcF3jBrtiwHQ/4CarJUcYLDm9k+81GiiKY2OTxADTPs/2Bbx/3JUVbIzqbWYwrdiKA==",
+  "dgSpecHash": "PSyMJS1EcHcR7YGGrMpdYIjHR0CiCQpmVbEyFFeKcFF9Jf+6rCE0R/c6yK5H3yQVBtFUNLQihSu7xnucWoOeuA==",
   "success": true,
   "projectFilePath": "D:\\Projects\\kanbanize-openapi-test\\openapi-tests\\openapi-tests\\openapi-tests.csproj",
   "expectedPackageFiles": [
@@ -14,7 +14,7 @@
     "C:\\Users\\alexs\\.nuget\\packages\\microsoft.testplatform.testhost\\17.5.0\\microsoft.testplatform.testhost.17.5.0.nupkg.sha512",
     "C:\\Users\\alexs\\.nuget\\packages\\microsoft.win32.primitives\\4.3.0\\microsoft.win32.primitives.4.3.0.nupkg.sha512",
     "C:\\Users\\alexs\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
-    "C:\\Users\\alexs\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\alexs\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\alexs\\.nuget\\packages\\nuget.frameworks\\5.11.0\\nuget.frameworks.5.11.0.nupkg.sha512",
     "C:\\Users\\alexs\\.nuget\\packages\\restsharp\\110.2.0\\restsharp.110.2.0.nupkg.sha512",
     "C:\\Users\\alexs\\.nuget\\packages\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
