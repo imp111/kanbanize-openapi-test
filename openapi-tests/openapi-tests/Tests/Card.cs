@@ -36,6 +36,24 @@
             return biggestId;
         }
 
+        public int GetPositionOfTheLastCard()
+        {
+            var response = _restClient.Get(_request);
+            Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(response.Content);
+
+            var lastCardPosition = 0;
+
+            for (int i = 0; i < myDeserializedClass.data.data.Count; i++)
+            {
+                if (lastCardPosition < myDeserializedClass.data.data[i].position)
+                {
+                    lastCardPosition = myDeserializedClass.data.data[i].position;
+                }
+            }
+
+            return lastCardPosition;
+        }
+
         [Fact]
         public void GetAllCards()
         {
@@ -52,6 +70,7 @@
         public void CreateACard()
         {
             int lastCardId = GetLastCardId();
+            int lastCardPosition = GetPositionOfTheLastCard();
 
             var payload = new JObject
             {
@@ -63,8 +82,8 @@
                 { "section", 2 },
                 { "column_id", 12 },
                 { "lane_id", 3 },
-                { "position", 2 },
-                { "priority", 250 }
+                { "position", ++lastCardPosition },
+                { "priority", 100 }
             };
 
             _request.AddStringBody(payload.ToString(), DataFormat.Json);
@@ -73,6 +92,35 @@
             string statusCode = respone.StatusCode.ToString();
             Assert.Equal("OK", statusCode);
             _outputHelper.WriteLine($"Status code 200 - Successfuly created card with id {lastCardId}");
+        }
+
+        [Fact]
+        public void CheckIfCardIsCreated()
+        {
+            int id = GetLastCardId();
+
+            // Request
+            var request = new RestRequest("/cards/{card_id}")
+                .AddUrlSegment("card_id", id);
+
+            request.AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
+
+            // Response
+            var response = _restClient.Get(request);
+
+            string statusCode = response.StatusCode.ToString();
+            Assert.Equal("OK", statusCode);
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {id} is created successfuly.");
+        }
+
+        [Fact]
+        public void CheckIfCardIsInTheRightPosition()
+        {
+        }
+
+        [Fact]
+        public void CheckIfCardIsCreatedWithExpectedParameters()
+        {
         }
     }
 }
