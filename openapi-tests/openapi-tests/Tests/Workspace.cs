@@ -1,12 +1,12 @@
-namespace openapi_tests
+namespace openapi_tests.Tests
 {
-    public class WorkspaceTests
+    public class Workspace
     {
         private readonly ITestOutputHelper _outputHelper;
         private readonly RestClient _restClient;
         private readonly RestRequest _request;
 
-        public WorkspaceTests(ITestOutputHelper testOutputHelper)
+        public Workspace(ITestOutputHelper testOutputHelper)
         {
             _outputHelper = testOutputHelper;
 
@@ -23,10 +23,10 @@ namespace openapi_tests
         {
             // response
             var response = _restClient.Get(_request);
-            
+
             // deserialize
             RootWorkspaces myDeserializedClass = JsonConvert.DeserializeObject<RootWorkspaces>(response.Content);
-            
+
             return myDeserializedClass.data.Count;
         }
 
