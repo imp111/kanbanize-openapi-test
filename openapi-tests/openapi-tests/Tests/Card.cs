@@ -159,6 +159,40 @@ namespace openapi_tests.Tests
             Assert.Equal($"{expectedPriority}", actualPriority);
             _outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
         }
+
+        [Fact]
+        public void MoveCardToDifferentColumn()
+        {
+            int id = GetLastCardId();
+            int currentPosition = GetPositionOfTheLastCard();
+
+            var payload = new JObject
+            {
+                { "position", 1 },
+                { "section", 3},
+                { "column_id", 13},
+            };
+
+            _request.AddStringBody(payload.ToString(), DataFormat.Json);
+            _response = _restClient.Patch(_request.AddUrlSegment("card_id", id));
+
+            // Assert
+            //_outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
+        }
     }
 }
 
+//In Progress
+//    "board_id": 2,
+//    "workflow_id": 3,
+//    "section": 3,
+//    "column_id": 13,
+//    "lane_id": 3,
+//    "position": 1
+
+//Requested
+//    "board_id": 2,
+//    "workflow_id": 3,
+//    "section": 2,
+//    "column_id": 12,
+//    "position": 5,
