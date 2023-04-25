@@ -21,7 +21,7 @@
         public int GetLastCardId()
         {
             var response = _restClient.Get(_request);
-            Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(response.Content);
+            var myDeserializedClass = JsonConvert.DeserializeObject<RootCards>(response.Content);
 
             var biggestId = 0;
 
@@ -39,7 +39,7 @@
         public int GetPositionOfTheLastCard()
         {
             var response = _restClient.Get(_request);
-            Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(response.Content);
+            var myDeserializedClass = JsonConvert.DeserializeObject<RootCards>(response.Content);
 
             var lastCardPosition = 0;
 
@@ -116,6 +116,23 @@
         [Fact]
         public void CheckIfCardIsInTheRightPosition()
         {
+            int id = GetLastCardId();
+            int expectedPosition = GetPositionOfTheLastCard();
+
+            // Request
+            var request = new RestRequest("/cards/{card_id}")
+                .AddUrlSegment("card_id", id);
+
+            request.AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
+
+            // Response
+            var response = _restClient.Get(request);
+            var myDeserializedClass = JsonConvert.DeserializeObject<RootCard>(response.Content);
+            var actualPosition = myDeserializedClass.data.position.ToString();
+
+            // Assert
+            Assert.Equal($"{expectedPosition}", actualPosition);
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {id} is in position {actualPosition}.");
         }
 
         [Fact]
