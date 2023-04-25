@@ -1,65 +1,87 @@
-﻿namespace openapi_tests.Tests
+﻿using openapi_tests.Data;
+
+namespace openapi_tests.Tests
 {
     public class Card
     {
         private readonly ITestOutputHelper _outputHelper;
         private readonly RestClient _restClient;
         private readonly RestRequest _request;
+        private readonly RestRequest _requests;
+        private RestResponse _response;
+        private RootCards? _myDeserializedCards = new RootCards();
+        private RootCard? _myDeserializedCard = new RootCard();
+        private RootWorkspaces? _myDeserializedWorkspaces = new RootWorkspaces();
 
         public Card(ITestOutputHelper testOutputHelper)
         {
             _outputHelper = testOutputHelper;
-            _request = new RestRequest("/cards").AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
+            _requests = new RestRequest("/cards").AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
+            _request = new RestRequest("/cards/{card_id}").AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
+            _response = new RestResponse();  
             _restClient = new RestClient(new RestClientOptions
             {
                 BaseUrl = new Uri("https://none7t.kanbanize.com/api/v2"),
                 Authenticator = new HttpBasicAuthenticator("alexsandartenev@gmail.com", "praseta123")
             });
+        }
 
+        public RootCards GetListOfCards() // returns a list of all cards
+        {
+            _response = _restClient.Get(_requests);
+            var listOfCards = JsonConvert.DeserializeObject<RootCards>(_response.Content);
+
+            return listOfCards;
+        }
+
+        public DataCards GetLastCard() // returns the last created card
+        {
+            _response = _restClient.Get(_requests);
+            var listOfCards = JsonConvert.DeserializeObject<RootCards>(_response.Content);
+            int cardsCount = listOfCards.data.data.Count();
+            int biggestId = 0;
+
+            for (int i = 0; i < cardsCount; i++)
+            {
+                if (biggestId < listOfCards.data.data[i].card_id)
+                {
+                    biggestId = listOfCards.data.card_id;
+                }
+            }
+
+            return listOfCards.data.data[biggestId];
         }
 
         public int GetLastCardId()
         {
-            var response = _restClient.Get(_request);
-            var myDeserializedClass = JsonConvert.DeserializeObject<RootCards>(response.Content);
-
-            var biggestId = 0;
-
-            for (int i = 0; i < myDeserializedClass.data.data.Count; i++)
-            {
-                if (biggestId < myDeserializedClass.data.data[i].card_id)
-                {
-                    biggestId = myDeserializedClass.data.data[i].card_id;
-                }
-            }
-
-            return biggestId;
+            return GetLastCard().card_id;
         }
 
         public int GetPositionOfTheLastCard()
         {
-            var response = _restClient.Get(_request);
-            var myDeserializedClass = JsonConvert.DeserializeObject<RootCards>(response.Content);
+            return GetLastCard().position;
+        }
 
-            var lastCardPosition = 0;
+        public string GetColorOfTheLastCard()
+        {
+            return GetLastCard().color;
+        }
 
-            for (int i = 0; i < myDeserializedClass.data.data.Count; i++)
-            {
-                if (lastCardPosition < myDeserializedClass.data.data[i].position)
-                {
-                    lastCardPosition = myDeserializedClass.data.data[i].position;
-                }
-            }
+        public int GetPriorityOfTheLastCard()
+        {
+            int id = GetLastCardId();
+            _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
+            _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
 
-            return lastCardPosition;
+            return _myDeserializedCard.data.priority;
         }
 
         [Fact]
         public void GetAllCards()
         {
             // response
-            var response = _restClient.Get(_request);
-            string statusCode = response.StatusCode.ToString();
+            _response = _restClient.Get(_requests);
+            string statusCode = _response.StatusCode.ToString();
 
             // Assert
             Assert.Equal("OK", statusCode);
@@ -86,10 +108,10 @@
                 { "priority", 100 }
             };
 
-            _request.AddStringBody(payload.ToString(), DataFormat.Json);
-            var respone = _restClient.Post(_request);
+            _requests.AddStringBody(payload.ToString(), DataFormat.Json);
+            _response = _restClient.Post(_requests);
 
-            string statusCode = respone.StatusCode.ToString();
+            string statusCode = _response.StatusCode.ToString();
             Assert.Equal("OK", statusCode);
             _outputHelper.WriteLine($"Status code 200 - Successfuly created card with id {lastCardId}");
         }
@@ -99,36 +121,20 @@
         {
             int id = GetLastCardId();
 
-            // Request
-            var request = new RestRequest("/cards/{card_id}")
-                .AddUrlSegment("card_id", id);
-
-            request.AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
-
             // Response
-            var response = _restClient.Get(request);
+            _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
 
-            string statusCode = response.StatusCode.ToString();
+            string statusCode = _response.StatusCode.ToString();
             Assert.Equal("OK", statusCode);
-            _outputHelper.WriteLine($"Status code 200 - Card with id: {id} is created successfuly.");
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {id} was successfuly created.");
         }
 
         [Fact]
         public void CheckIfCardIsInTheRightPosition()
         {
-            int id = GetLastCardId();
             int expectedPosition = GetPositionOfTheLastCard();
-
-            // Request
-            var request = new RestRequest("/cards/{card_id}")
-                .AddUrlSegment("card_id", id);
-
-            request.AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
-
-            // Response
-            var response = _restClient.Get(request);
-            var myDeserializedClass = JsonConvert.DeserializeObject<RootCard>(response.Content);
-            var actualPosition = myDeserializedClass.data.position.ToString();
+            string actualPosition = GetLastCard().position.ToString();
+            int id = GetLastCardId();
 
             // Assert
             Assert.Equal($"{expectedPosition}", actualPosition);
@@ -138,6 +144,20 @@
         [Fact]
         public void CheckIfCardIsCreatedWithExpectedParameters()
         {
+            int id = GetLastCardId();
+            string expectedColor = GetColorOfTheLastCard();
+            int expectedPriority = GetPriorityOfTheLastCard();
+
+            // Response
+            _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
+            _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
+            var actualColor = _myDeserializedCard.data.color.ToString();
+            var actualPriority = _myDeserializedCard.data.priority.ToString();
+
+            // Assert
+            Assert.Equal($"{expectedColor}", actualColor);
+            Assert.Equal($"{expectedPriority}", actualPriority);
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
         }
     }
 }
