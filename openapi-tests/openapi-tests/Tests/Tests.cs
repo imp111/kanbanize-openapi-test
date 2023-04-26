@@ -1,24 +1,18 @@
-﻿using openapi_tests.Data;
-
-namespace openapi_tests.Tests
+﻿namespace openapi_tests.Tests
 {
-    public class Card
+    public class Tests
     {
         private readonly ITestOutputHelper _outputHelper;
         private readonly RestClient _restClient;
-        private readonly RestRequest _request;
-        private readonly RestRequest _requests;
-        private RestResponse _response;
+        private RestRequest? _request;
+        private RestResponse? _response;
         private RootCards? _myDeserializedCards = new RootCards();
         private RootCard? _myDeserializedCard = new RootCard();
         private RootWorkspaces? _myDeserializedWorkspaces = new RootWorkspaces();
 
-        public Card(ITestOutputHelper testOutputHelper)
+        public Tests(ITestOutputHelper testOutputHelper)
         {
             _outputHelper = testOutputHelper;
-            _requests = new RestRequest("/cards").AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
-            _request = new RestRequest("/cards/{card_id}").AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
-            _response = new RestResponse();  
             _restClient = new RestClient(new RestClientOptions
             {
                 BaseUrl = new Uri("https://none7t.kanbanize.com/api/v2"),
@@ -26,18 +20,32 @@ namespace openapi_tests.Tests
             });
         }
 
-        public RootCards GetListOfCards() // returns a list of all cards
+        public RootCards GetAllCards() // returns a list of all cards
         {
-            _response = _restClient.Get(_requests);
+            _request = new RestRequest("/cards").AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
+            _response = _restClient.Get(_request);
+
             var listOfCards = JsonConvert.DeserializeObject<RootCards>(_response.Content);
 
             return listOfCards;
         }
 
-        public DataCards GetLastCard() // returns the last created card
+        public DataCard GetCardById(int id) // returns the last created card
         {
-            _response = _restClient.Get(_requests);
-            var listOfCards = JsonConvert.DeserializeObject<RootCards>(_response.Content);
+            _request = new RestRequest("/cards/{card_id}")
+                .AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd")
+                .AddUrlSegment("card_id", id);
+
+            _response = _restClient.Get(_request);
+
+            var card = JsonConvert.DeserializeObject<DataCard>(_response.Content);
+            
+            return card;
+        }
+
+        public DataCards GetLastCard(RootCards listOfCards) // returns the last created card
+        {
+            listOfCards = JsonConvert.DeserializeObject<RootCards>(_response.Content);
             int cardsCount = listOfCards.data.data.Count();
             int biggestId = 0;
 
@@ -52,24 +60,34 @@ namespace openapi_tests.Tests
             return listOfCards.data.data[biggestId];
         }
 
-        public int GetLastCardId()
+        public int GetLastCardId(DataCards lastCard)
         {
-            return GetLastCard().card_id;
+            return lastCard.card_id;
         }
 
-        public int GetPositionOfTheLastCard()
+        public int GetPositionOfTheLastCard(DataCards lastCard)
         {
-            return GetLastCard().position;
+            return lastCard.position;
         }
 
-        public string GetColorOfTheLastCard()
+        public string GetColorOfTheLastCard(DataCard lastCard)
         {
-            return GetLastCard().color;
+            return lastCard.color;
         }
 
-        public int GetPriorityOfTheLastCard()
+        public int GetColumnIdOfTheLastCard(DataCards lastCard)
         {
-            int id = GetLastCardId();
+            return lastCard.column_id;
+        }
+
+        public int GetSectionOfTheLastCard(DataCards lastCard)
+        {
+            return lastCard.section;
+        }
+
+        public int GetPriorityOfTheLastCard(DataCards lastCard)
+        {
+            int id = lastCard.card_id;
             _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
             _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
 
@@ -77,22 +95,13 @@ namespace openapi_tests.Tests
         }
 
         [Fact]
-        public void GetAllCards()
-        {
-            // response
-            _response = _restClient.Get(_requests);
-            string statusCode = _response.StatusCode.ToString();
-
-            // Assert
-            Assert.Equal("OK", statusCode);
-            _outputHelper.WriteLine("A succesful response, Status code: 200 (OK)");
-        }
-
-        [Fact]
         public void CreateACard()
         {
-            int lastCardId = GetLastCardId();
-            int lastCardPosition = GetPositionOfTheLastCard();
+            var listOfCards = GetAllCards();
+            var lastCard = GetLastCard(listOfCards);
+            
+            int lastCardId = GetLastCardId(lastCard);
+            int lastCardPosition = GetPositionOfTheLastCard(lastCard);
 
             var payload = new JObject
             {
@@ -108,8 +117,8 @@ namespace openapi_tests.Tests
                 { "priority", 100 }
             };
 
-            _requests.AddStringBody(payload.ToString(), DataFormat.Json);
-            _response = _restClient.Post(_requests);
+            _request.AddStringBody(payload.ToString(), DataFormat.Json);
+            _response = _restClient.Post(_request);
 
             string statusCode = _response.StatusCode.ToString();
             Assert.Equal("OK", statusCode);
@@ -164,35 +173,36 @@ namespace openapi_tests.Tests
         public void MoveCardToDifferentColumn()
         {
             int id = GetLastCardId();
-            int currentPosition = GetPositionOfTheLastCard();
+            int currentColumnId = GetColumnIdOfTheLastCard();
+            int currentSection = GetSectionOfTheLastCard();
 
             var payload = new JObject
             {
-                { "position", 1 },
-                { "section", 3},
-                { "column_id", 13},
+                { "position", 0 },
+                { "section", ++currentSection},
+                { "column_id", ++currentColumnId},
             };
 
             _request.AddStringBody(payload.ToString(), DataFormat.Json);
             _response = _restClient.Patch(_request.AddUrlSegment("card_id", id));
 
             // Assert
-            //_outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
+            Assert.Equal("OK", _response.StatusCode.ToString());
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {id} was moved to column: {currentSection} and section: {currentSection}.");
+        }
+
+        [Fact]
+        public void CheckIfCardIsSuccessfulyMoved()
+        {
+            int id = GetLastCardId();
+            
+            _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
+            _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
+
+
+            // Assert
+            Assert.Equal("OK", _response.StatusCode.ToString());
+            //_outputHelper.WriteLine($"Status code 200 - Card with id: {id} was moved to column: {currentSection} and section: {currentSection}.");
         }
     }
 }
-
-//In Progress
-//    "board_id": 2,
-//    "workflow_id": 3,
-//    "section": 3,
-//    "column_id": 13,
-//    "lane_id": 3,
-//    "position": 1
-
-//Requested
-//    "board_id": 2,
-//    "workflow_id": 3,
-//    "section": 2,
-//    "column_id": 12,
-//    "position": 5,
