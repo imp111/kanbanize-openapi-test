@@ -129,33 +129,5 @@ namespace openapi_tests.Methods
 
             return _response;
         }
-
-        public RootCard CreateACardDeserializedResponse()
-        {
-            var lastCard = GetLastCard();
-
-            int lastCardId = GetLastCardId(lastCard);
-            int lastCardPosition = GetLastCardPosition(lastCard);
-
-            var payload = new JObject
-            {
-                { "card_id", ++lastCardId },
-                { "board_id", 2 },
-                { "workflow_id", 3 },
-                { "title", $"Testing Post Method {lastCardId}" },
-                { "color", "2666be" },
-                { "section", 2 },
-                { "column_id", 12 },
-                { "lane_id", 3 },
-                { "position", ++lastCardPosition },
-                { "priority", 100 }
-            };
-
-            _request.AddStringBody(payload.ToString(), DataFormat.Json);
-            _response = _restClient.Post(_request);
-            _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
-
-            return _myDeserializedCard;
-        }
     }
 }
