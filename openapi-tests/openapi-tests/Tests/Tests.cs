@@ -6,12 +6,13 @@ namespace openapi_tests.Tests
     {
         private readonly ITestOutputHelper _outputHelper;
         private readonly Cards CardsMethods;
-        private List<RootCard> parameters;
+        private List<int> createdCardIds;
 
         public Tests(ITestOutputHelper testOutputHelper, Cards cardsMethods)
         {
             _outputHelper = testOutputHelper;
             CardsMethods = cardsMethods;
+            createdCardIds = new List<int>();
         }
 
         [Fact]
@@ -23,7 +24,7 @@ namespace openapi_tests.Tests
             var response = CardsMethods.CreateACardResponse();
             var myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(response.Content);
             var newCardId = myDeserializedCard.data.card_id;
-            parameters.Add(myDeserializedCard);
+            createdCardIds.Add(newCardId);
 
             string statusCode = response.StatusCode.ToString();
 
@@ -38,7 +39,9 @@ namespace openapi_tests.Tests
             // Response
             var lastCard = CardsMethods.GetLastCard();
             var lastCardId = lastCard.card_id;
-            int newCardId = parameters[parameters.Count - 1].data.card_id;
+
+            int id = createdCardIds[createdCardIds.Count - 1];
+            int newCardId = CardsMethods.GetCardById(id).card_id;
 
             Assert.Equal(newCardId, lastCardId);
             _outputHelper.WriteLine($"Status code 200 - Card with id: {lastCardId} was successfuly created.");
@@ -50,7 +53,8 @@ namespace openapi_tests.Tests
             var lastCard = CardsMethods.GetLastCard();
             int expectedPosition = CardsMethods.GetLastCardPosition(lastCard);
 
-            int actualPosition = parameters[parameters.Count - 1].data.position;
+            int id = createdCardIds[createdCardIds.Count - 1];
+            int actualPosition = CardsMethods.GetCardById(id).position;
             
             // Assert
             Assert.Equal(expectedPosition, actualPosition);
@@ -60,38 +64,25 @@ namespace openapi_tests.Tests
         [Fact]
         public void CheckIfCardIsCreatedWithExpectedParameters()
         {
-            int id = CardsMethods.GetLastCardId();
-            string expectedColor = CardsMethods.GetColorOfTheLastCard();
-            int expectedPriority = CardsMethods.GetPriorityOfTheLastCard();
+            var lastCard = CardsMethods.GetLastCard();
+            string expectedColor = CardsMethods.GetLastCardColor(lastCard);
+            int expectedPriority = CardsMethods.GetLastCardPriority(lastCard);
 
-            // Response
-            _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
-            _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
-            var actualColor = _myDeserializedCard.data.color.ToString();
-            var actualPriority = _myDeserializedCard.data.priority.ToString();
-
+            int id = createdCardIds[createdCardIds.Count - 1];
+            string actualColor = CardsMethods.GetCardById(id).color;
+            int actualPriority = CardsMethods.GetCardById(id).priority;
             // Assert
             Assert.Equal($"{expectedColor}", actualColor);
-            Assert.Equal($"{expectedPriority}", actualPriority);
+            Assert.Equal(expectedPriority, actualPriority);
             _outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
         }
 
         [Fact]
         public void MoveCardToDifferentColumn()
         {
-            int id = GetLastCardId();
-            int currentColumnId = GetColumnIdOfTheLastCard();
-            int currentSection = GetSectionOfTheLastCard();
-
-            var payload = new JObject
-            {
-                { "position", 0 },
-                { "section", ++currentSection},
-                { "column_id", ++currentColumnId},
-            };
-
-            _request.AddStringBody(payload.ToString(), DataFormat.Json);
-            _response = _restClient.Patch(_request.AddUrlSegment("card_id", id));
+            var lastCard = CardsMethods.GetLastCard();
+            int currentColumnId = CardsMethods.GetLastCardColumnId(lastCard);
+            int currentSection = CardsMethods.GetLastCardSection(lastCard);
 
             // Assert
             Assert.Equal("OK", _response.StatusCode.ToString());

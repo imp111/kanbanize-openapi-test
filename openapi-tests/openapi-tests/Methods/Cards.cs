@@ -79,7 +79,7 @@ namespace openapi_tests.Methods
             return lastCard.position;
         }
 
-        public string GetLastCardColor(DataCard lastCard)
+        public string GetLastCardColor(DataCards lastCard)
         {
             return lastCard.color;
         }
@@ -126,6 +126,22 @@ namespace openapi_tests.Methods
 
             _request.AddStringBody(payload.ToString(), DataFormat.Json);
             _response = _restClient.Post(_request);
+
+            return _response;
+        }
+
+        public RestResponse MoveCardToDifferentColumn()
+        {
+
+            var payload = new JObject
+            {
+                { "position", 0 },
+                { "section", ++currentSection},
+                { "column_id", ++currentColumnId},
+            };
+
+            _request.AddStringBody(payload.ToString(), DataFormat.Json);
+            _response = _restClient.Patch(_request.AddUrlSegment("card_id", id));
 
             return _response;
         }
