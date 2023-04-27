@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace openapi_tests.Data
+﻿namespace openapi_tests.Data
 {
-    internal class Workflows
+    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
+    public class DatumWorkflows
     {
+        public int type { get; set; }
+        public int position { get; set; }
+        public int is_enabled { get; set; }
+        public int is_collapsible { get; set; }
+        public string? name { get; set; }
+        public int workflow_id { get; set; }
+    }
+
+    public class RootWorkflows
+    {
+        public List<DatumWorkflows>? data { get; set; }
     }
 }

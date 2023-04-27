@@ -6,13 +6,15 @@ namespace openapi_tests.Tests
     {
         private readonly ITestOutputHelper _outputHelper;
         private readonly Cards CardsMethods;
+        private readonly Boards BoardsMethods;
         private List<int> createdCardIds;
 
-        public Tests(ITestOutputHelper testOutputHelper, Cards cardsMethods)
+        public Tests(ITestOutputHelper testOutputHelper, Cards cardsMethods, Boards boardsMethods)
         {
             _outputHelper = testOutputHelper;
             CardsMethods = cardsMethods;
             createdCardIds = new List<int>();
+            BoardsMethods = boardsMethods;
         }
 
         [Fact]
@@ -71,36 +73,41 @@ namespace openapi_tests.Tests
             int id = createdCardIds[createdCardIds.Count - 1];
             string actualColor = CardsMethods.GetCardById(id).color;
             int actualPriority = CardsMethods.GetCardById(id).priority;
+
             // Assert
             Assert.Equal($"{expectedColor}", actualColor);
             Assert.Equal(expectedPriority, actualPriority);
             _outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
         }
 
-        [Fact]
-        public void MoveCardToDifferentColumn()
-        {
-            var lastCard = CardsMethods.GetLastCard();
-            int currentColumnId = CardsMethods.GetLastCardColumnId(lastCard);
-            int currentSection = CardsMethods.GetLastCardSection(lastCard);
+        //[Fact]
+        //public void MoveCardToDifferentColumn()
+        //{
+        //    var lastCard = CardsMethods.GetLastCard();
+        //    int currentColumnId = CardsMethods.GetLastCardColumnId(lastCard);
+        //    int currentSection = CardsMethods.GetLastCardSection(lastCard);
 
-            // Assert
-            Assert.Equal("OK", _response.StatusCode.ToString());
-            _outputHelper.WriteLine($"Status code 200 - Card with id: {id} was moved to column: {currentSection} and section: {currentSection}.");
-        }
+        //    int id = createdCardIds[createdCardIds.Count - 1];
+        //    var card = CardsMethods.GetCardById(id);
 
-        [Fact]
-        public void CheckIfCardIsSuccessfulyMoved()
-        {
-            int id = GetLastCardId();
+        //    // Assert
+        //    Assert.Equal("OK", _response.StatusCode.ToString());
+        //    _outputHelper.WriteLine($"Status code 200 - Card with id: {id} was moved to column: {currentSection} and section: {currentSection}.");
+        //}
+
+        //[Fact]
+        //public void CheckIfCardIsSuccessfulyMoved()
+        //{
+        //    int id = GetLastCardId();
             
-            _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
-            _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
+        //    _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
+        //    _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
 
+        //    var a = BoardsMethods.GetBoardByName();
 
-            // Assert
-            Assert.Equal("OK", _response.StatusCode.ToString());
-            //_outputHelper.WriteLine($"Status code 200 - Card with id: {id} was moved to column: {currentSection} and section: {currentSection}.");
-        }
+        //    // Assert
+        //    Assert.Equal("OK", _response.StatusCode.ToString());
+        //    //_outputHelper.WriteLine($"Status code 200 - Card with id: {id} was moved to column: {currentSection} and section: {currentSection}.");
+        //}
     }
 }

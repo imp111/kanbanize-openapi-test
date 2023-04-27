@@ -14,6 +14,4 @@
     {
         public List<DatumBoards>? data { get; set; }
     }
-
-
 }
