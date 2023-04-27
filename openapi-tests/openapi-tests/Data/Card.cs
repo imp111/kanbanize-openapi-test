@@ -1,7 +1,7 @@
 ﻿namespace openapi_tests.Data
 {
     // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
-    public class ChildCardStats
+    public class ChildCardStatsCards
     {
         public int child_card_size_sum { get; set; }
         public int finished_bottom_child_card_size_sum { get; set; }
@@ -50,7 +50,7 @@
         public List<object>? linked_cards { get; set; }
     }
 
-    public class Reporter
+    public class ReporterCards
     {
         public string? type { get; set; }
         public int value { get; set; }

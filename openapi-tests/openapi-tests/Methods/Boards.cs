@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestPlatform.Common.Utilities;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,9 +29,12 @@ namespace openapi_tests.Methods
             _request = new RestRequest("/boards").AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
             _response = _restClient.Get(_request);
 
-            var listOfBoards = JsonConvert.DeserializeObject<RootBoards>(_response.Content);
+            if (_response.Content != null)
+            {
+                return JsonConvert.DeserializeObject<RootBoards>(_response.Content);
+            }
 
-            return listOfBoards;
+            return new RootBoards();
         }
 
         public DatumBoards GetLastBoard() // returns the last created card
@@ -70,7 +75,18 @@ namespace openapi_tests.Methods
             _request = new RestRequest("/boards").AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd");
             _response = _restClient.Get(_request);
 
+            if (_response.Content == null)
+            {
+                throw new Exception();
+            }
+
             var listOfBoards = JsonConvert.DeserializeObject<RootBoards>(_response.Content);
+
+            if (listOfBoards == null)
+            {
+                throw new Exception();
+            }
+
             int boardsCount = listOfBoards.data.Count;
             var board = new DatumBoards();
 

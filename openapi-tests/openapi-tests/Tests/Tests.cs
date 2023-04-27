@@ -5,16 +5,18 @@ namespace openapi_tests.Tests
     public class Tests
     {
         private readonly ITestOutputHelper _outputHelper;
-        private readonly Cards CardsMethods;
-        private readonly Boards BoardsMethods;
+        private Cards CardsMethods;
+        private Boards BoardsMethods;
+        private Columns ColumnsMethods;
         private List<int> createdCardIds;
 
-        public Tests(ITestOutputHelper testOutputHelper, Cards cardsMethods, Boards boardsMethods)
+        public Tests(ITestOutputHelper testOutputHelper, Cards cards, Boards boards, Columns columns)
         {
             _outputHelper = testOutputHelper;
-            CardsMethods = cardsMethods;
             createdCardIds = new List<int>();
-            BoardsMethods = boardsMethods;
+            CardsMethods = cards;
+            BoardsMethods = boards;
+            ColumnsMethods = columns;
         }
 
         [Fact]
@@ -24,8 +26,8 @@ namespace openapi_tests.Tests
             var lastCardId = lastCard.card_id;
 
             var response = CardsMethods.CreateACardResponse();
-            var myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(response.Content);
-            var newCardId = myDeserializedCard.data.card_id;
+            var myDeserializedCard = JsonConvert.DeserializeObject<DataCard>(response.Content);
+            var newCardId = myDeserializedCard.card_id;
             createdCardIds.Add(newCardId);
 
             string statusCode = response.StatusCode.ToString();
@@ -80,26 +82,33 @@ namespace openapi_tests.Tests
             _outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
         }
 
-        //[Fact]
-        //public void MoveCardToDifferentColumn()
-        //{
-        //    var lastCard = CardsMethods.GetLastCard();
-        //    int currentColumnId = CardsMethods.GetLastCardColumnId(lastCard);
-        //    int currentSection = CardsMethods.GetLastCardSection(lastCard);
+        [Fact]
+        public void MoveCardToDifferentColumn()
+        {
+            int cardId = createdCardIds[createdCardIds.Count - 1];
+            var card = CardsMethods.GetCardById(cardId);
 
-        //    int id = createdCardIds[createdCardIds.Count - 1];
-        //    var card = CardsMethods.GetCardById(id);
+            var board = BoardsMethods.GetBoardByName("Test Workspace");
+            var boardId = board.board_id;
 
-        //    // Assert
-        //    Assert.Equal("OK", _response.StatusCode.ToString());
-        //    _outputHelper.WriteLine($"Status code 200 - Card with id: {id} was moved to column: {currentSection} and section: {currentSection}.");
-        //}
+            var column = ColumnsMethods.GetColumnByName("In Progress", boardId); // we need the id of the board
+            var columnSection = column.section;
+            var columnId = column.column_id;
+            var columnPosition = column.position;
+            var columnName = column.name;
+            
+            var response = CardsMethods.MoveCardToDifferentColumn(cardId, columnSection, columnId, columnPosition);
+            
+            // Assert
+            Assert.Equal("OK", response.StatusCode.ToString());
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {cardId} was moved to column: {columnName} and position: {columnPosition}.");
+        }
 
         //[Fact]
         //public void CheckIfCardIsSuccessfulyMoved()
         //{
         //    int id = GetLastCardId();
-            
+
         //    _response = _restClient.Get(_request.AddUrlSegment("card_id", id));
         //    _myDeserializedCard = JsonConvert.DeserializeObject<RootCard>(_response.Content);
 

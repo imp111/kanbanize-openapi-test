@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace openapi_tests.Methods
+﻿namespace openapi_tests.Methods
 {
     public class Cards
     {
@@ -130,18 +124,17 @@ namespace openapi_tests.Methods
             return _response;
         }
 
-        public RestResponse MoveCardToDifferentColumn()
+        public RestResponse MoveCardToDifferentColumn(int cardId, int section, int column_id, int position)
         {
-
             var payload = new JObject
             {
-                { "position", 0 },
-                { "section", ++currentSection},
-                { "column_id", ++currentColumnId},
+                { "position", position },
+                { "section", section},
+                { "column_id", ++column_id},
             };
 
             _request.AddStringBody(payload.ToString(), DataFormat.Json);
-            _response = _restClient.Patch(_request.AddUrlSegment("card_id", id));
+            _response = _restClient.Patch(_request.AddUrlSegment("card_id", cardId));
 
             return _response;
         }

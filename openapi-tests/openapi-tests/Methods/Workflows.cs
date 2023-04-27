@@ -1,6 +1,4 @@
-﻿using openapi_tests.Data;
-
-namespace openapi_tests.Methods
+﻿namespace openapi_tests.Methods
 {
     public class Workflows
     {
