@@ -315,22 +315,21 @@
             _outputHelper.WriteLine($"Status code 200 - Card with id: {newCardId} is in position {newCardPosition} and card with id: {lastCardId} is in position {lastCardPosition}.");
         }
 
-        //[Fact, TestPriority(4)]
-        //public void CheckIfCardIsCreatedWithExpectedParameters()
-        //{
-        //    var lastCard = GetLastCard();
-        //    string expectedColor = GetLastCardColor(lastCard);
-        //    int expectedPriority = GetLastCardPriority(lastCard);
+        [Theory]
+        [InlineData("2666be", 100)]
+        public void CheckIfCardIsCreatedWithExpectedParameters(string expectedColor, int expectedPriority)
+        {
+            var response = CreateACardResponse();
+            var deserializedCard = GetCreatedCardDeserializedResponse(response);
+            string newCardColor = deserializedCard.data[0].color;
+            int newCardPriority = deserializedCard.data[0].priority;
+            int newCardId = deserializedCard.data[0].card_id;
 
-        //    int id = 
-        //    string actualColor = GetCardById(id).color;
-        //    int actualPriority = GetCardById(id).priority;
-
-        //    // Assert
-        //    Assert.Equal($"{expectedColor}", actualColor);
-        //    Assert.Equal(expectedPriority, actualPriority);
-        //    _outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
-        //}
+            // Assert
+            Assert.Equal(expectedColor, newCardColor);
+            Assert.Equal(expectedPriority, newCardPriority);
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {newCardId} has color: {newCardColor} and priority: {newCardPriority}.");
+        }
 
         //[Fact, TestPriority(5)]
         //public void MoveCardToColumn()
