@@ -201,12 +201,11 @@
             return _response;
         }
 
-        public int GetCreatedCardId(RestResponse response)
+        public RootPostCard GetCreatedCardDeserializedResponse(RestResponse response)
         {
             var myDeserializedCard = JsonConvert.DeserializeObject<RootPostCard>(response.Content);
-            int newCardId = myDeserializedCard.data[0].card_id;
-
-            return newCardId;
+            
+            return myDeserializedCard;
         }
 
         public bool IsCardCreatedSuccessfuly(int newCardId, int oldCardId)
@@ -289,7 +288,8 @@
             var lastCardId = lastCard.card_id;
 
             var response = CreateACardResponse();
-            int newCardId = GetCreatedCardId(response);
+            var deserializedCard = GetCreatedCardDeserializedResponse(response);
+            int newCardId = deserializedCard.data[0].card_id;
 
             bool check = IsCardCreatedSuccessfuly(newCardId, lastCardId);
 
@@ -298,19 +298,22 @@
             _outputHelper.WriteLine($"Status code 200 - Card with id: {newCardId} was successfuly created.");
         }
 
-        //[Fact, TestPriority(3)]
-        //public void CheckIfCardIsInTheRightPosition()
-        //{
-        //    var lastCard = GetLastCard();
-        //    int expectedPosition = GetLastCardPosition(lastCard);
+        [Fact]
+        public void CheckIfCardIsInTheRightPosition()
+        {
+            var lastCard = GetLastCard();
+            var lastCardPosition = lastCard.position;
+            var lastCardId = lastCard.card_id;
 
-        //    int id = 
-        //    int actualPosition = GetCardById(id).position;
+            var response = CreateACardResponse();
+            var deserializedCard = GetCreatedCardDeserializedResponse(response);
+            int newCardPosition = deserializedCard.data[0].position;
+            int newCardId = deserializedCard.data[0].card_id;
 
-        //    // Assert
-        //    Assert.Equal(expectedPosition, actualPosition);
-        //    _outputHelper.WriteLine($"Status code 200 - Card with id: {lastCard.card_id} is in position {expectedPosition}.");
-        //}
+            // Assert
+            Assert.NotEqual(newCardPosition, lastCardPosition);
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {newCardId} is in position {newCardPosition} and card with id: {lastCardId} is in position {lastCardPosition}.");
+        }
 
         //[Fact, TestPriority(4)]
         //public void CheckIfCardIsCreatedWithExpectedParameters()
