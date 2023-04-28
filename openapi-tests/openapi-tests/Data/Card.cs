@@ -28,14 +28,14 @@
         public object? size { get; set; }
         public int priority { get; set; }
         public object? deadline { get; set; }
-        public Reporter? reporter { get; set; }
+        public ReporterCards? reporter { get; set; }
         public DateTime created_at { get; set; }
         public int revision { get; set; }
         public DateTime last_modified { get; set; }
         public DateTime in_current_position_since { get; set; }
         public int is_blocked { get; set; }
         public object? block_reason { get; set; }
-        public ChildCardStats? child_card_stats { get; set; }
+        public ChildCardStatsCards? child_card_stats { get; set; }
         public int finished_subtask_count { get; set; }
         public int unfinished_subtask_count { get; set; }
         public List<object>? attachments { get; set; }

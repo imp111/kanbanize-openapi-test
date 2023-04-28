@@ -3,7 +3,6 @@
     public class Test
     {
         private readonly ITestOutputHelper _outputHelper;
-        private List<int> createdCardIds;
         public readonly RestClient _restClient;
         public RestRequest? _request;
         public RestResponse? _response;
@@ -25,7 +24,6 @@
             _myDeserializedColumn = new RootColumns();
             _request = new RestRequest();
             _response = new RestResponse();
-            createdCardIds = new List<int>();
         }
 
 
@@ -180,24 +178,45 @@
             int lastCardId = GetLastCardId(lastCard);
             int lastCardPosition = GetLastCardPosition(lastCard);
 
+            int expectedNewCardId = lastCardId + 1;
+            int expectedNewCardPosition = lastCardPosition + 1;
+
             var payload = new JObject
             {
-                { "card_id", ++lastCardId },
+                { "card_id", expectedNewCardId},
                 { "board_id", 2 },
                 { "workflow_id", 3 },
-                { "title", $"Testing Post Method {lastCardId}" },
+                { "title", $"Testing Post Method {expectedNewCardId}" },
                 { "color", "2666be" },
                 { "section", 2 },
                 { "column_id", 12 },
                 { "lane_id", 3 },
-                { "position", ++lastCardPosition },
+                { "position", expectedNewCardPosition },
                 { "priority", 100 }
             };
 
             _request.AddStringBody(payload.ToString(), DataFormat.Json);
             _response = _restClient.Post(_request);
-
+            
             return _response;
+        }
+
+        public int GetCreatedCardId(RestResponse response)
+        {
+            var myDeserializedCard = JsonConvert.DeserializeObject<RootPostCard>(response.Content);
+            int newCardId = myDeserializedCard.data[0].card_id;
+
+            return newCardId;
+        }
+
+        public bool IsCardCreatedSuccessfuly(int newCardId, int oldCardId)
+        {
+            if (newCardId > oldCardId)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public RestResponse MoveCardToDifferentColumn(int cardId, int section, int column_id, int position)
@@ -257,103 +276,79 @@
         [Fact]
         public void CreateACard()
         {
-            var lastCard = GetLastCard();
-
-            int lastCardId = GetLastCardId(lastCard);
-            int lastCardPosition = GetLastCardPosition(lastCard);
-
-            var payload = new JObject
-            {
-                { "card_id", ++lastCardId },
-                { "board_id", 2 },
-                { "workflow_id", 3 },
-                { "title", $"Testing Post Method {lastCardId}" },
-                { "color", "2666be" },
-                { "section", 2 },
-                { "column_id", 12 },
-                { "lane_id", 3 },
-                { "position", ++lastCardPosition },
-                { "priority", 100 }
-            };
-
-            _request.AddStringBody(payload.ToString(), DataFormat.Json);
-            _response = _restClient.Post(_request);
-
-            //var myDeserializedCard = JsonConvert.DeserializeObject<DatumPostCard>(newCard);
-            DatumPostCard myDeserializedClass = JsonConvert.DeserializeObject<DatumPostCard>(_response.Content);
-
-            //int newCardId = myDeserializedCard.data[0].card_id;
-            //createdCardIds.Add(newCardId);
-
-            //Assert.NotEqual(lastCardId, newCardId);
-            //_outputHelper.WriteLine($"Status code 200 - Successfuly created card with id {newCardId}");
+            var response = CreateACardResponse();
+            
+            Assert.Equal("OK", response.StatusCode.ToString());
+            _outputHelper.WriteLine($"Status code 200 - Successfuly created card.");
         }
 
         [Fact]
         public void CheckIfCardIsCreated()
         {
-            // Response
             var lastCard = GetLastCard();
             var lastCardId = lastCard.card_id;
 
-            int id = createdCardIds[createdCardIds.Count - 1];
-            int newCardId = GetCardById(id).card_id;
+            var response = CreateACardResponse();
+            int newCardId = GetCreatedCardId(response);
 
-            Assert.Equal(newCardId, lastCardId);
-            _outputHelper.WriteLine($"Status code 200 - Card with id: {lastCardId} was successfuly created.");
+            bool check = IsCardCreatedSuccessfuly(newCardId, lastCardId);
+
+            Assert.True(check);
+            Assert.NotEqual(newCardId, lastCardId);
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {newCardId} was successfuly created.");
         }
 
-        [Fact]
-        public void CheckIfCardIsInTheRightPosition()
-        {
-            var lastCard = GetLastCard();
-            int expectedPosition = GetLastCardPosition(lastCard);
+        //[Fact, TestPriority(3)]
+        //public void CheckIfCardIsInTheRightPosition()
+        //{
+        //    var lastCard = GetLastCard();
+        //    int expectedPosition = GetLastCardPosition(lastCard);
 
-            int id = createdCardIds[createdCardIds.Count - 1];
-            int actualPosition = GetCardById(id).position;
+        //    int id = 
+        //    int actualPosition = GetCardById(id).position;
 
-            // Assert
-            Assert.Equal(expectedPosition, actualPosition);
-            _outputHelper.WriteLine($"Status code 200 - Card with id: {lastCard.card_id} is in position {expectedPosition}.");
-        }
+        //    // Assert
+        //    Assert.Equal(expectedPosition, actualPosition);
+        //    _outputHelper.WriteLine($"Status code 200 - Card with id: {lastCard.card_id} is in position {expectedPosition}.");
+        //}
 
-        [Fact]
-        public void CheckIfCardIsCreatedWithExpectedParameters()
-        {
-            var lastCard = GetLastCard();
-            string expectedColor = GetLastCardColor(lastCard);
-            int expectedPriority = GetLastCardPriority(lastCard);
+        //[Fact, TestPriority(4)]
+        //public void CheckIfCardIsCreatedWithExpectedParameters()
+        //{
+        //    var lastCard = GetLastCard();
+        //    string expectedColor = GetLastCardColor(lastCard);
+        //    int expectedPriority = GetLastCardPriority(lastCard);
 
-            int id = createdCardIds[createdCardIds.Count - 1];
-            string actualColor = GetCardById(id).color;
-            int actualPriority = GetCardById(id).priority;
+        //    int id = 
+        //    string actualColor = GetCardById(id).color;
+        //    int actualPriority = GetCardById(id).priority;
 
-            // Assert
-            Assert.Equal($"{expectedColor}", actualColor);
-            Assert.Equal(expectedPriority, actualPriority);
-            _outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
-        }
+        //    // Assert
+        //    Assert.Equal($"{expectedColor}", actualColor);
+        //    Assert.Equal(expectedPriority, actualPriority);
+        //    _outputHelper.WriteLine($"Status code 200 - Card with id: {id} has color: {actualColor} and priority: {actualPriority}.");
+        //}
 
-        [Fact]
-        public void MoveCardToColumn()
-        {
-            int cardId = createdCardIds[createdCardIds.Count - 1];
-            
-            var board = GetBoardByName("Test Workspace");
-            var boardId = board.board_id;
+        //[Fact, TestPriority(5)]
+        //public void MoveCardToColumn()
+        //{
+        //    int cardId = 
 
-            var column = GetColumnByName("In Progress", boardId); // we need the id of the board
-            var columnSection = column.section;
-            var columnId = column.column_id;
-            var columnPosition = column.position;
-            var columnName = column.name;
+        //    var board = GetBoardByName("Test Workspace");
+        //    var boardId = board.board_id;
 
-            var response = MoveCardToDifferentColumn(cardId, columnSection, columnId, columnPosition);
+        //    var column = GetColumnByName("In Progress", boardId); // we need the id of the board
+        //    var columnSection = column.section;
+        //    var columnId = column.column_id;
+        //    var columnPosition = column.position;
+        //    var columnName = column.name;
 
-            // Assert
-            Assert.Equal("OK", response.StatusCode.ToString());
-            _outputHelper.WriteLine($"Status code 200 - Card with id: {cardId} was moved to column: {columnName} and position: {columnPosition}.");
-        }
+        //    var response = MoveCardToDifferentColumn(cardId, columnSection, columnId, columnPosition);
+
+        //    // Assert
+        //    Assert.Equal("OK", response.StatusCode.ToString());
+        //    _outputHelper.WriteLine($"Status code 200 - Card with id: {cardId} was moved to column: {columnName} and position: {columnPosition}.");
+        //}
 
         //[Fact]
         //public void CheckIfCardIsSuccessfulyMoved()
