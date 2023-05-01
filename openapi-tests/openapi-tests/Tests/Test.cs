@@ -3,12 +3,12 @@
     public class Test
     {
         private readonly ITestOutputHelper _outputHelper;
-        public readonly RestClient _restClient;
-        public RestRequest? _request;
-        public RestResponse? _response;
-        public RootBoards _myDeserializedBoard;
-        public RootCard _myDeserializedCard;
-        public RootColumns _myDeserializedColumn;
+        private readonly RestClient _restClient;
+        private RestRequest? _request;
+        private RestResponse? _response;
+        private RootBoards _myDeserializedBoard;
+        private RootCard _myDeserializedCard;
+        private RootColumns _myDeserializedColumn;
 
         public Test(ITestOutputHelper testOutputHelper)
         {
@@ -83,7 +83,7 @@
 
             for (int i = 0; i < boardsCount; i++)
             {
-                if (name.ToLower() == listOfBoards.data[i].name)
+                if (name.ToLower() == listOfBoards.data[i].name.ToLower())
                 {
                     board = listOfBoards.data[i];
                 }
@@ -124,7 +124,7 @@
             return listOfCards.data.data[biggestId];
         }
 
-        public DataCard GetCardById(int id) // returns the last created card
+        public RestResponse GetCardByIdResponse(int id) // returns the last created card
         {
             _request = new RestRequest("/cards/{card_id}")
                 .AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd")
@@ -132,7 +132,18 @@
 
             _response = _restClient.Get(_request);
 
-            var card = JsonConvert.DeserializeObject<DataCard>(_response.Content);
+            return _response;
+        }
+
+        public RootCard GetCardById(int id) // returns the last created card
+        {
+            _request = new RestRequest("/cards/{card_id}")
+                .AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd")
+                .AddUrlSegment("card_id", id);
+
+            _response = _restClient.Get(_request);
+
+            var card = JsonConvert.DeserializeObject<RootCard>(_response.Content);
 
             return card;
         }
@@ -170,7 +181,7 @@
 
             return _myDeserializedCard.data.priority;
         }
-        
+
         public RestResponse CreateACardResponse() // works
         {
             var lastCard = GetLastCard();
@@ -197,15 +208,22 @@
 
             _request.AddStringBody(payload.ToString(), DataFormat.Json);
             _response = _restClient.Post(_request);
-            
+
             return _response;
         }
 
         public RootPostCard GetCreatedCardDeserializedResponse(RestResponse response)
         {
             var myDeserializedCard = JsonConvert.DeserializeObject<RootPostCard>(response.Content);
-            
+
             return myDeserializedCard;
+        }
+
+        public int GetCreatedCardId(RootPostCard card)
+        {
+            int id = card.data[0].card_id;
+
+            return id;
         }
 
         public bool IsCardCreatedSuccessfuly(int newCardId, int oldCardId)
@@ -220,22 +238,55 @@
 
         public RestResponse MoveCardToDifferentColumn(int cardId, int section, int column_id, int position)
         {
-            var payload = new JObject
-            {
-                { "position", position },
-                { "section", section},
-                { "column_id", ++column_id},
+            var card = GetCardById(cardId).data;
+
+            var payload = new RootPatchCard() {
+                card_id = card.card_id,
+                custom_id = card.custom_id,
+                board_id = card.board_id,
+                workflow_id = card.workflow_id,
+                title = card.title,
+                owner_user_id = card.owner_user_id,
+                type_id = card.type_id,
+                color = card.color,
+                section = section,
+                column_id = column_id,
+                lane_id = card.lane_id,
+                position = position,
+                priority = card.priority
             };
 
-            _request.AddStringBody(payload.ToString(), DataFormat.Json);
-            _response = _restClient.Patch(_request.AddUrlSegment("card_id", cardId));
+            _request = new RestRequest("/cards/{card_id}", Method.Patch)
+                .AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd")
+                .AddUrlSegment("card_id", cardId)
+                .AddBody(payload, ContentType.Json);
+
+            _response = _restClient.Execute(_request);
 
             return _response;
         }
 
-        // Columns Section ----------------------------------------------------------------------------------
+        // Board Structure ----------------------------------------------------------------------------------
 
-        public RootColumns GetAllColumns(int id) // returns a list of all cards
+        
+
+        public RootColumns GetAllColumns(int boardId) // returns a list of all cards
+    {
+        _request = new RestRequest("/boards/{board_id}/currentStructure")
+            .AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd")
+            .AddUrlSegment("board_id", boardId);
+
+        _response = _restClient.Get(_request);
+
+        var listOfColumns = JsonConvert.DeserializeObject<RootColumns>(_response.Content);
+
+        return listOfColumns;
+    }
+
+
+    // Columns Section ----------------------------------------------------------------------------------
+
+    public RootColumns GetAllColumns(int id) // returns a list of all cards
         {
             _request = new RestRequest("/boards/{board_id}/columns")
                 .AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd")
@@ -248,11 +299,11 @@
             return listOfColumns;
         }
 
-        public DatumColumns GetColumnByName(string name, int id) // returns a list of all cards
+        public DatumColumns GetColumnByName(string name, int boardId) // returns a list of all cards
         {
             _request = new RestRequest("/boards/{board_id}/columns")
                 .AddHeader("apikey", "3ZIPG0qqf7fBuUQ8uqCt7N7iTKoGuOhHSwRRwdtd")
-                .AddUrlSegment("board_id", id);
+                .AddUrlSegment("board_id", boardId);
 
             _response = _restClient.Get(_request);
 
@@ -261,7 +312,7 @@
 
             for (int i = 0; i < listOfColumns.data.Count; i++)
             {
-                if (name == listOfColumns.data[i].name)
+                if (name.ToLower() == listOfColumns.data[i].name.ToLower())
                 {
                     column = listOfColumns.data[i];
                 }
@@ -331,26 +382,28 @@
             _outputHelper.WriteLine($"Status code 200 - Card with id: {newCardId} has color: {newCardColor} and priority: {newCardPriority}.");
         }
 
-        //[Fact, TestPriority(5)]
-        //public void MoveCardToColumn()
-        //{
-        //    int cardId = 
+        [Theory]
+        [InlineData("Test Workspace", "In Progress")]
+        public void MoveCardToColumn(string searchedBoardName, string searchedColumn)
+        {
+            var lastCard = GetLastCard();
+            int lastCardId = lastCard.card_id;
 
-        //    var board = GetBoardByName("Test Workspace");
-        //    var boardId = board.board_id;
+            var board = GetBoardByName(searchedBoardName);
+            var boardId = board.board_id;
 
-        //    var column = GetColumnByName("In Progress", boardId); // we need the id of the board
-        //    var columnSection = column.section;
-        //    var columnId = column.column_id;
-        //    var columnPosition = column.position;
-        //    var columnName = column.name;
+            var column = GetColumnByName(searchedColumn, boardId); // we need the id of the board
+            var columnSection = column.section;
+            var columnId = column.column_id;
+            var columnPosition = 0;
+            var columnName = column.name;
 
-        //    var response = MoveCardToDifferentColumn(cardId, columnSection, columnId, columnPosition);
+            var response = MoveCardToDifferentColumn(lastCardId, columnSection, columnId, columnPosition);
 
-        //    // Assert
-        //    Assert.Equal("OK", response.StatusCode.ToString());
-        //    _outputHelper.WriteLine($"Status code 200 - Card with id: {cardId} was moved to column: {columnName} and position: {columnPosition}.");
-        //}
+            // Assert
+            Assert.Equal("OK", response.StatusCode.ToString());
+            _outputHelper.WriteLine($"Status code 200 - Card with id: {lastCardId} was moved to column: {columnName} and position: {columnPosition}.");
+        }
 
         //[Fact]
         //public void CheckIfCardIsSuccessfulyMoved()
